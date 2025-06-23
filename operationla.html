@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor Rencana Operasional Solera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Harmony -->
+    <!-- Application Structure Plan: A single-page dashboard structure is used to transform the dense report into an engaging experience. The navigation allows users to jump between four key areas: 1) 'Ringkasan' for a high-level overview and KPIs, 2) 'Peran & Alur' as the interactive core to explore user journeys (Buyer, Seller, Courier), 3) 'Dukungan & Operasional' to visualize complex support flows and the project timeline, and 4) 'Masa Depan' for the roadmap. This structure was chosen because it deconstructs the operational plan into user-centric, digestible modules, promoting exploration over passive reading and directly mirroring the multi-faceted ecosystem Solera aims to build. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Key Performance Indicators (KPIs). Goal: Inform. Viz: Interactive stat cards (HTML/CSS) for a quick, high-impact summary. Justification: More engaging than a static list.
+        - Report Info: 83.3% student interest in pre-orders. Goal: Highlight a key market driver. Viz: Donut Chart (Chart.js). Justification: Instantly communicates the overwhelming majority and validates the feature's importance.
+        - Report Info: User roles (Buyer, Seller, Courier). Goal: Organize & Compare. Viz: An interactive section switcher (JS) revealing role-specific user journey diagrams built with HTML/Tailwind. Justification: Allows users to understand the system from multiple perspectives, making the abstract plan concrete.
+        - Report Info: Customer support escalation protocol (Table 6.1). Goal: Simplify a complex process. Viz: A structured visual flow diagram (HTML/Tailwind Grid). Justification: Translates a dense table into an intuitive, easy-to-follow visual guide for issue resolution.
+        - Report Info: Project timeline. Goal: Show change over time. Viz: A horizontal timeline using HTML/Flexbox. Justification: Provides a clear, linear overview of the launch phases without the complexity of a full Gantt chart.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+        }
+        .role-button {
+            transition: all 0.3s ease;
+        }
+        .role-button.active {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .kpi-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0; /* slate-200 */
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-color: #0d9488; /* teal-600 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg">S</span>
+                <h1 class="text-xl font-bold text-slate-800">Solera Ops Dashboard</h1>
+            </div>
+            <div class="hidden md:flex items-center space-x-2 bg-slate-100 p-1 rounded-full">
+                <a data-target="ringkasan" class="nav-link active">Ringkasan</a>
+                <a data-target="peran" class="nav-link">Peran & Alur</a>
+                <a data-target="dukungan" class="nav-link">Dukungan & Operasional</a>
+                <a data-target="masa-depan" class="nav-link">Masa Depan</a>
+            </div>
+             <div class="md:hidden">
+                <select id="mobile-nav" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                    <option value="ringkasan" selected>Ringkasan</option>
+                    <option value="peran">Peran & Alur</option>
+                    <option value="dukungan">Dukungan & Operasional</option>
+                    <option value="masa-depan">Masa Depan</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+
+        <!-- Section: Ringkasan -->
+        <section id="ringkasan" class="content-section active">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-teal-700 mb-2">Mendigitalisasi Ekosistem Sekolah</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">Sebuah platform untuk merevolusi kebiasaan konsumsi dan memberdayakan UMKM pelajar di SMAN 2 Cibinong melalui teknologi yang mudah diakses.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-3">
+                    <h3 class="text-2xl font-semibold mb-4 text-slate-700">Indikator Kinerja Utama (KPI)</h3>
+                    <p class="text-slate-600 mb-6">Ini adalah target kesuksesan utama untuk peluncuran awal. Arahkan kursor ke setiap kartu untuk melihat detailnya.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="kpi-card bg-white p-5 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-3xl text-teal-600">30%</h4>
+                            <p class="font-semibold text-slate-800">Pangsa Pre-Order</p>
+                            <p class="text-sm text-slate-500">Dari total pesanan, menargetkan adopsi fitur utama untuk menghemat waktu siswa.</p>
+                        </div>
+                        <div class="kpi-card bg-white p-5 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-3xl text-teal-600">85%</h4>
+                            <p class="font-semibold text-slate-800">Kepuasan Penjual</p>
+                            <p class="text-sm text-slate-500">Memastikan UMKM pelajar merasa diberdayakan dan didukung oleh platform.</p>
+                        </div>
+                        <div class="kpi-card bg-white p-5 rounded-lg shadow-sm">
+                             <h4 class="font-bold text-3xl text-teal-600">&lt;2 mnt</h4>
+                            <p class="font-semibold text-slate-800">Konfirmasi Pesanan</p>
+                            <p class="text-sm text-slate-500">Menjamin respons cepat dari penjual untuk menjaga kepercayaan pembeli.</p>
+                        </div>
+                        <div class="kpi-card bg-white p-5 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-3xl text-teal-600">20+</h4>
+                            <p class="font-semibold text-slate-800">UMKM Aktif</p>
+                            <p class="text-sm text-slate-500">Membangun variasi pilihan yang kaya bagi para pembeli di dalam ekosistem.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-2xl font-semibold mb-2 text-center text-slate-700">Minat Tinggi pada Pre-Order</h3>
+                        <p class="text-sm text-center text-slate-500 mb-4">Data survei awal menunjukkan validasi pasar yang kuat untuk fitur andalan Solera.</p>
+                        <div class="chart-container">
+                            <canvas id="preOrderInterestChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Peran & Alur -->
+        <section id="peran" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-teal-700 mb-2">Tiga Peran, Satu Ekosistem</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">Aplikasi Solera melayani tiga peran utama dalam komunitas sekolah. Pilih peran untuk menjelajahi perjalanan, fitur, dan solusi yang dirancang khusus untuk mereka.</p>
+            </div>
+
+            <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                <button data-role="pembeli" class="role-button active bg-white border border-slate-300 py-2 px-4 md:px-6 rounded-full font-semibold text-slate-700">Siswa Pembeli</button>
+                <button data-role="penjual" class="role-button bg-white border border-slate-300 py-2 px-4 md:px-6 rounded-full font-semibold text-slate-700">UMKM Penjual</button>
+                <button data-role="kurir" class="role-button bg-white border border-slate-300 py-2 px-4 md:px-6 rounded-full font-semibold text-slate-700">Kurir Siswa</button>
+            </div>
+
+            <div id="role-content" class="bg-white p-6 md:p-8 rounded-lg shadow-sm border border-slate-200">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Section: Dukungan & Operasional -->
+        <section id="dukungan" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-teal-700 mb-2">Jaring Kepercayaan & Efisiensi</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">Keberhasilan Solera tidak hanya bergantung pada teknologi, tetapi juga pada dukungan yang responsif dan rencana operasional yang matang.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-slate-700">Alur Resolusi Masalah</h3>
+                    <p class="text-slate-600 mb-6">Aplikasi ini dirancang untuk menyederhanakan pelaporan masalah dan mengotomatiskan eskalasi ke tim yang tepat, memastikan penyelesaian di bawah 30 menit.</p>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800">Masalah Isi Saldo</p>
+                            <p class="text-sm text-slate-500">Pengguna lapor ➔ Sistem cek status otomatis ➔ Jika anomali, eskalasi ke tim <span class="font-bold text-teal-600">Keuangan/Teknologi</span>.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800">Pesanan Salah/Tidak Lengkap</p>
+                            <p class="text-sm text-slate-500">Pengguna lapor ➔ Buka obrolan 3-arah (Pembeli, Penjual, CS) ➔ Eskalasi ke tim <span class="font-bold text-teal-600">CS Lapangan</span>.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800">Aplikasi Error / Bug</p>
+                            <p class="text-sm text-slate-500">Pengguna lapor ➔ Log teknis terlampir otomatis ➔ Eskalasi ke tim <span class="font-bold text-teal-600">CEO/Teknologi</span>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-slate-700">Linimasa Peluncuran</h3>
+                    <p class="text-slate-600 mb-6">Peluncuran akan dilakukan secara bertahap untuk memastikan setiap fase berjalan lancar dan umpan balik dapat diimplementasikan.</p>
+                    <div class="relative pl-8">
+                         <div class="absolute left-3.5 top-2 bottom-2 w-1 bg-slate-200 rounded"></div>
+                        <div class="relative mb-6">
+                            <div class="absolute -left-5 top-1 w-4 h-4 bg-teal-600 rounded-full border-2 border-white"></div>
+                            <p class="font-bold text-slate-800">Minggu 1: Persiapan Tim</p>
+                            <p class="text-sm text-slate-500">Pembentukan tim lapangan "Solera Ambassador" dan koordinasi awal dengan pihak sekolah.</p>
+                        </div>
+                         <div class="relative mb-6">
+                            <div class="absolute -left-5 top-1 w-4 h-4 bg-teal-600 rounded-full border-2 border-white"></div>
+                            <p class="font-bold text-slate-800">Minggu 2: Uji Coba Terbatas</p>
+                            <p class="text-sm text-slate-500">Onboarding 5-10 UMKM awal dan peluncuran fitur inti (pre-order, cashless) ke grup pengguna terbatas.</p>
+                        </div>
+                         <div class="relative mb-6">
+                            <div class="absolute -left-5 top-1 w-4 h-4 bg-teal-600 rounded-full border-2 border-white"></div>
+                            <p class="font-bold text-slate-800">Minggu 3-4: Peluncuran Penuh</p>
+                            <p class="text-sm text-slate-500">Peluncuran aplikasi ke seluruh siswa SMAN 2 Cibinong dan onboarding UMKM gelombang kedua.</p>
+                        </div>
+                         <div class="relative">
+                            <div class="absolute -left-5 top-1 w-4 h-4 bg-teal-600 rounded-full border-2 border-white"></div>
+                            <p class="font-bold text-slate-800">Minggu 5+: Evaluasi & Iterasi</p>
+                            <p class="text-sm text-slate-500">Analisis data KPI, pengumpulan umpan balik, dan perencanaan iterasi produk berikutnya.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Masa Depan -->
+        <section id="masa-depan" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-teal-700 mb-2">Peta Jalan Menuju Pertumbuhan</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">Peluncuran di SMAN 2 Cibinong adalah langkah pertama. Visi kami adalah untuk terus berinovasi dan berekspansi.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 text-center">
+                    <div class="text-4xl mb-4 text-teal-600">🏆</div>
+                    <h3 class="text-xl font-semibold mb-2 text-slate-800">Gamifikasi</h3>
+                    <p class="text-slate-600">Memperkenalkan sistem lencana (badges) untuk "Pelanggan Setia", "Penjual Teratas", dan "Kurir Tercepat" untuk mendorong keterlibatan.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 text-center">
+                    <div class="text-4xl mb-4 text-teal-600">🤝</div>
+                    <h3 class="text-xl font-semibold mb-2 text-slate-800">Fitur Sosial</h3>
+                    <p class="text-slate-600">Memungkinkan pesanan kelompok untuk acara kelas atau melihat apa yang sedang populer di antara teman untuk meningkatkan efek jaringan.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 text-center">
+                    <div class="text-4xl mb-4 text-teal-600">🚀</div>
+                    <h3 class="text-xl font-semibold mb-2 text-slate-800">Modul Ekspansi</h3>
+                    <p class="text-slate-600">Membangun arsitektur yang mudah diadaptasi untuk ekspansi ke 10 sekolah pada tahun 2025, dengan konfigurasi yang fleksibel.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-12 border-t">
+        <div class="container mx-auto px-6 py-4 text-center text-slate-500 text-sm">
+            <p>&copy; 2025 PT. Solera Crypto Network. Dasbor Interaktif Rencana Operasional.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const roleData = {
+                pembeli: {
+                    title: 'Perjalanan Siswa Pembeli',
+                    description: 'Fokus utama adalah menghemat waktu dan mengurangi stres saat jam istirahat yang singkat. Pengalaman dirancang untuk kecepatan dan kemudahan.',
+                    journey: [
+                        { icon: '🔍', title: 'Penemuan', text: 'Menjelajahi UMKM & menu melalui beranda atau fitur pencarian.' },
+                        { icon: '📲', title: 'Pre-Order', text: 'Pesan makan siang lebih awal melalui alur yang dioptimalkan.' },
+                        { icon: '💳', title: 'Bayar Cashless', text: 'Pembayaran instan dengan "Saldo Solera" dalam satu ketukan.' },
+                        { icon: '🚚', title: 'Lacak Pesanan', text: 'Melihat status pesanan secara real-time: Dikonfirmasi, Disiapkan, Siap Diambil.' },
+                        { icon: '✅', title: 'Ambil Pesanan', text: 'Mengambil pesanan di titik pengambilan khusus tanpa antre.' }
+                    ]
+                },
+                penjual: {
+                    title: 'Pemberdayaan UMKM Pelajar',
+                    description: 'Menyediakan alat yang sederhana namun kuat bagi wirausahawan siswa untuk mengelola bisnis mereka dengan mudah dan efisien.',
+                    journey: [
+                        { icon: '📝', title: 'Pengaturan Toko', text: 'Proses pendaftaran & pembuatan menu yang dipandu.' },
+                        { icon: '🔔', title: 'Terima Pesanan', text: 'Notifikasi instan untuk pesanan baru dengan target konfirmasi <2 menit.' },
+                        { icon: '🍳', title: 'Siapkan Pesanan', text: 'Mengelola antrean pesanan yang masuk secara terorganisir.' },
+                        { icon: '📊', title: 'Lacak Pendapatan', text: 'Dasbor analitik sederhana untuk melihat penjualan dan produk terlaris.' },
+                        { icon: '💰', title: 'Tarik Dana', text: 'Proses penarikan penghasilan yang transparan dan mudah.' }
+                    ]
+                },
+                kurir: {
+                    title: 'Efisiensi Kurir Siswa',
+                    description: 'Antarmuka yang berorientasi pada tugas untuk memastikan pengiriman yang cepat dan akurat selama jam istirahat yang padat.',
+                    journey: [
+                        { icon: '🗺️', title: 'Terima Tugas', text: 'Melihat daftar pengantaran yang tersedia di peta sekolah yang disederhanakan.' },
+                        { icon: '🏃‍♂️', title: 'Ambil Pesanan', text: 'Navigasi jelas ke lokasi UMKM untuk mengambil paket pesanan.' },
+                        { icon: '💬', title: 'Komunikasi Cepat', text: 'Menggunakan pesan cepat (pre-canned message) untuk berkoordinasi dengan pembeli.' },
+                        { icon: '�', title: 'Antar ke Pembeli', text: 'Instruksi jelas untuk menuju ke titik pengantaran (misal: depan kelas).' },
+                        { icon: '⭐', title: 'Selesaikan Tugas', text: 'Konfirmasi pengantaran selesai dan melihat ringkasan penghasilan.' }
+                    ]
+                }
+            };
+
+            const roleContentContainer = document.getElementById('role-content');
+            const roleButtons = document.querySelectorAll('.role-button');
+
+            function updateRoleContent(role) {
+                const data = roleData[role];
+                if (!data) return;
+
+                let journeyHTML = '<div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 text-center">';
+                data.journey.forEach(step => {
+                    journeyHTML += `
+                        <div class="flex-1">
+                           <div class="text-3xl mb-2">${step.icon}</div>
+                           <h4 class="font-semibold text-slate-800">${step.title}</h4>
+                           <p class="text-sm text-slate-500">${step.text}</p>
+                        </div>
+                    `;
+                });
+                journeyHTML += '</div>';
+
+                roleContentContainer.innerHTML = `
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-semibold text-slate-800">${data.title}</h3>
+                        <p class="text-slate-600 max-w-2xl mx-auto mt-2">${data.description}</p>
+                    </div>
+                    ${journeyHTML}
+                `;
+            }
+
+            roleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    roleButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const role = button.dataset.role;
+                    updateRoleContent(role);
+                });
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+            const sections = document.querySelectorAll('.content-section');
+
+            function switchSection(targetId) {
+                 sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    }
+                });
+                 navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if(link.dataset.target === targetId){
+                        link.classList.add('active');
+                    }
+                });
+                mobileNav.value = targetId;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchSection(link.dataset.target);
+                });
+            });
+            
+            mobileNav.addEventListener('change', (e) => {
+                switchSection(e.target.value);
+            });
+
+
+            const ctx = document.getElementById('preOrderInterestChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Siswa Tertarik Pre-Order', 'Lainnya'],
+                    datasets: [{
+                        label: 'Minat Siswa',
+                        data: [83.3, 16.7],
+                        backgroundColor: [
+                            '#0d9488', // teal-600
+                            '#e2e8f0'  // slate-200
+                        ],
+                        borderColor: [
+                            '#ffffff',
+                            '#ffffff'
+                        ],
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                   size: 14,
+                                   family: 'Inter'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            updateRoleContent('pembeli');
+        });
+    </script>
+</body>
+</html>
+�
